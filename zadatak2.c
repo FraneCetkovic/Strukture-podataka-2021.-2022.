@@ -21,7 +21,7 @@ int InsertAfter(Position position, Position newPerson);
 Position FindLast(Position head);
 int AppendList(Position head, char* name, char* surname, int birthYear);
 Position FindPerson(Position first,char* surname);
-int DeleteAfter(Position head, char* surname);
+int DeleteAfter(Position pos);
 Position FindPrevious(Position first, char* surname);
 
 int main(int argc, char**argv)
@@ -131,10 +131,10 @@ Position FindPerson(Position first, char* surname)
     return NULL;
 }
 
-int DeleteAfter(Position pos, char* surname)
+int DeleteAfter(Position pos)
 {
     Position Deleted=NULL;
-    
+
     if(pos->next==NULL)
     {
         perror("Element does not exist");
