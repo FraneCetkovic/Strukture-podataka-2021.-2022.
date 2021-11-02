@@ -3,6 +3,7 @@
 #include <string.h>
 
 #define MAX_SIZE (50)
+#define MAX_LINE (1024)
 
 struct _Person;
 typedef struct _Person* Position;
@@ -23,12 +24,20 @@ int AppendList(Position head, char* name, char* surname, int birthYear);
 Position FindPerson(Position first,char* surname);
 int DeleteAfter(Position pos);
 Position FindPrevious(Position first, char* surname);
+int InsertBefore(Position position, Position newPerson, Position first);
+int InsertSorted(Position head, Position newPerson);
+int WriteToFile (char * filename, Position first);
+int ReadFromFile(char* filename, Position head);
+
+
 
 int main(int argc, char**argv)
 {
     Person head = { .next = NULL, .name = {0},
     .surname = {0}, .birthYear = 0 };
     Position p = &head;
+
+
     return 0;
 }
 
@@ -141,7 +150,7 @@ int DeleteAfter(Position pos)
         return -1;
     }
 
-    Position Deleted=pos->next;
+    Deleted=pos->next;
     pos->next=Deleted->next;
 
     free(Deleted);
@@ -161,3 +170,167 @@ Position FindPrevious(Position first, char* surname)
 
     return NULL;
 }
+
+int InsertBefore(Position position, Position newPerson, Position first)
+{
+    Position previous= NULL;
+    previous=FindPrevious(first, position->surname);
+
+    if(previous)
+    {
+        newPerson->next=previous->next;
+        previous->next=newPerson->next;
+        return EXIT_SUCCESS;
+    }
+
+    return -1;
+}
+
+int InsertSorted(Position head , Position newPerson)
+{
+    Position temp=head;
+
+    if(head->next == NULL)
+    {
+        head->next=newPerson;
+        newPerson->next=NULL;
+
+        return EXIT_SUCCESS;
+    }
+    while(strcmp(newPerson->surname , temp->next->surname) > 0)
+    {
+        temp=temp->next;
+    }
+
+    newPerson->next=temp->next;
+    temp->next=newPerson;
+
+    return EXIT_SUCCESS;
+}
+
+int WriteToFile(char * filename, Position first)
+{
+    FILE * file;
+    Position temp=first;
+
+    file=fopen(filename, "w");
+
+    if(!file)
+    {
+        perror("Error : Cannot open file");
+        return -1;
+    }
+
+    while(temp)
+    {
+        fprintf(file , "%s %s %d\n", temp->name, temp->surname, temp->birthYear);
+        temp=temp->next;
+    }
+
+    fclose(file);
+    return EXIT_SUCCESS;
+}
+
+int ReadFromFile(char* filename, Position head)
+{
+    FILE * file;
+    Position temp = head;
+    Position newPerson=NULL;
+
+    char name[MAX_SIZE]="",surname[MAX_SIZE]="";
+    char line[MAX_LINE]="";
+    int birthYear=0;
+
+    file=fopen(filename, "w");
+
+    if(!file)
+    {
+        perror("Error : Cannot open file \n}");
+        return -1;
+    }
+
+    while(!feof(file))
+    {
+        fgets(line,1024,file);
+
+        if(sscanf(line,"%s %s %d", name,surname,birthYear)==3)
+        {
+            newPerson=CreatePerson(name,surname,birthYear);
+            InsertSorted(head,newPerson);
+        }
+    }
+
+    fclose(file);
+    return EXIT_SUCCESS;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
