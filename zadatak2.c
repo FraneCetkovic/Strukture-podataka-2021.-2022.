@@ -15,12 +15,12 @@ typedef struct _Person
     Position next;
 }Person;
 
-int PrependList(Position head, char* name, char* surname, int birthYear);
+int PrependList(Position head, Position newPerson);
 int PrintList(Position first);
 Position CreatePerson(char* name, char* surname, int birthYear);
 int InsertAfter(Position position, Position newPerson);
 Position FindLast(Position head);
-int AppendList(Position head, char* name, char* surname, int birthYear);
+int AppendList(Position head, Position newPerson);
 Position FindPerson(Position first,char* surname);
 int DeleteAfter(Position pos);
 Position FindPrevious(Position first, char* surname);
@@ -28,6 +28,8 @@ int InsertBefore(Position position, Position newPerson, Position first);
 int InsertSorted(Position head, Position newPerson);
 int WriteToFile (char * filename, Position first);
 int ReadFromFile(char* filename, Position head);
+void Menu(Position head);
+Position ReadPerson();
 
 
 
@@ -37,15 +39,16 @@ int main(int argc, char**argv)
     .surname = {0}, .birthYear = 0 };
     Position p = &head;
 
+    printf("Welcome\n");
+    Menu(p);
 
     return 0;
 }
 
-int PrependList(Position head, char* name, char* surname, int birthYear)
+int PrependList(Position head, Position newPerson)
 {
-    Position newPerson = NULL;
+    printf("Adding person to start of list\n");
 
-    newPerson = CreatePerson(name, surname, birthYear);
     if (!newPerson)
     {
       return -1;
@@ -60,9 +63,10 @@ int PrintList(Position first)
 {
     Position temp = first;
 
+    printf("\nPrinting list: \n");
     while (temp)
     {
-        printf("Name: %s, surname_ %s, birth year: %d\n", temp->name, temp->surname, temp->birthYear);
+        printf("%s %s %d\n", temp->name, temp->surname, temp->birthYear);
         temp = temp->next;
     }
 
@@ -107,12 +111,10 @@ Position FindLast(Position head)
     return temp;
 }
 
-int AppendList(Position head, char* name, char* surname, int birthYear)
+int AppendList(Position head, Position newPerson)
 {
-    Position newPerson = NULL;
     Position last = NULL;
 
-    newPerson = CreatePerson(name, surname, birthYear);
     if (!newPerson)
     {
         return -1;
@@ -166,6 +168,7 @@ Position FindPrevious(Position first, char* surname)
         {
             return temp;
         }
+        temp=temp->next;
     }
 
     return NULL;
@@ -179,7 +182,7 @@ int InsertBefore(Position position, Position newPerson, Position first)
     if(previous)
     {
         newPerson->next=previous->next;
-        previous->next=newPerson->next;
+        previous->next=newPerson;
         return EXIT_SUCCESS;
     }
 
@@ -197,7 +200,8 @@ int InsertSorted(Position head , Position newPerson)
 
         return EXIT_SUCCESS;
     }
-    while(strcmp(newPerson->surname , temp->next->surname) > 0)
+
+    while( (temp-> next) && (strcmp(newPerson->surname , temp->next->surname) > 0) )
     {
         temp=temp->next;
     }
@@ -210,7 +214,7 @@ int InsertSorted(Position head , Position newPerson)
 
 int WriteToFile(char * filename, Position first)
 {
-    FILE * file;
+    FILE * file=NULL;
     Position temp=first;
 
     file=fopen(filename, "w");
@@ -233,7 +237,7 @@ int WriteToFile(char * filename, Position first)
 
 int ReadFromFile(char* filename, Position head)
 {
-    FILE * file;
+    FILE * file=NULL;
     Position temp = head;
     Position newPerson=NULL;
 
@@ -241,7 +245,7 @@ int ReadFromFile(char* filename, Position head)
     char line[MAX_LINE]="";
     int birthYear=0;
 
-    file=fopen(filename, "w");
+    file=fopen(filename, "r");
 
     if(!file)
     {
@@ -253,7 +257,7 @@ int ReadFromFile(char* filename, Position head)
     {
         fgets(line,1024,file);
 
-        if(sscanf(line,"%s %s %d", name,surname,birthYear)==3)
+        if(sscanf(line,"%s %s %d", name,surname,&birthYear)==3)
         {
             newPerson=CreatePerson(name,surname,birthYear);
             InsertSorted(head,newPerson);
@@ -264,9 +268,118 @@ int ReadFromFile(char* filename, Position head)
     return EXIT_SUCCESS;
 }
 
+void Menu(Position head)
+{
+    int choice=0;
+    char filename[MAX_SIZE]="", surname[MAX_SIZE]="";
+    Position temp=NULL;
+    
 
+    
+    do
+    {
+        printf("\nChoose action : \n 0 : Exit program\n 1 : Read from file\n 2 : Write to file\n 3 : Print list\n 4 : Prepend list \n 5 : Append list \n 6 : Insert after certain surname\n 7 : Insert before certain surname\n 8 : Insert person alphabetically sorted\n 9 : Delete person\n");
+        scanf(" %d",&choice);
 
+        switch (choice)
+        {
+            case 0 : 
+                printf("Exiting\n");
+                return;
+            case 1 : 
+                printf("\nPlease input filename: ");
+                scanf("%s",filename);
+                ReadFromFile(filename,head);
+                break;
 
+            case 2 : 
+                printf("\nPlease input filename: ");
+                scanf("%s",filename);
+                WriteToFile(filename,head->next);
+                break;
+
+            case 3 : 
+                PrintList(head->next);
+                break;
+
+            case 4:
+                temp=ReadPerson();
+                if(temp)
+                    PrependList(head, temp );
+                break;
+
+            case 5:
+                temp=ReadPerson();
+                if(temp)
+                AppendList(head, temp );
+                break;
+
+            case 6:
+                printf("Please enter surname after which to insert new person: ");
+                scanf("%s", surname);
+                temp=ReadPerson();
+                if(temp)
+                    InsertAfter(FindPerson(head->next,surname), temp);
+                break;
+
+            case 7:
+                printf("Please enter surname before which to insert new person: ");
+                scanf("%s", surname);
+                temp=ReadPerson();
+                if(temp)
+                    InsertBefore(FindPerson(head->next,surname),temp,head->next);
+                break;
+            
+            case 8:
+                temp=ReadPerson();
+                if(temp)
+                    InsertSorted(head,temp);
+                break;
+            
+            case 9:
+                printf("Enter surname of person to delete: ");
+                scanf("%s",surname);
+
+                temp = FindPrevious(head->next,surname);
+                DeleteAfter(temp);
+                break;
+            
+            default:
+                printf("Unknown action\n");
+        }
+    } while(choice);
+
+    return;
+}
+
+Position ReadPerson()
+{
+    char name[MAX_SIZE]="", surname[MAX_SIZE]="";
+    char line[MAX_LINE]="";
+    Position newPerson=NULL;
+
+    int birthYear=0;
+
+    printf("Please enter name, surname and birth year:");
+    
+    scanf(" ");
+    fgets(line,1024,stdin);
+
+    printf("LINE : %s",line);
+
+    if(sscanf(line,"%s %s %d", name , surname , &birthYear)==3)
+    {
+        newPerson=CreatePerson(name,surname,birthYear);
+    }
+
+    else
+    {
+        perror("Error : Invalid input");
+        return NULL;
+    }
+
+    return newPerson;
+}
 
 
 
