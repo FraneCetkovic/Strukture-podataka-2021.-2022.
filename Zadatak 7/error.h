@@ -1,0 +1,1 @@
+#define CANT_ALLOCATE -1
