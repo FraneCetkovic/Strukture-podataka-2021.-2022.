@@ -23,6 +23,7 @@ Node CreateNode(int value)
 
 int InsertNode(Node curr, Node newNode)
 {
+    int state=0;
     if(!curr)
     {
         printf("Tree doesn't exist!\n");
@@ -34,14 +35,14 @@ int InsertNode(Node curr, Node newNode)
         return EXIT_SUCCESS;
     }
 
-    if(newNode->value<curr->value)
+    if(newNode->value < curr->value)
     {
         if(!(curr->left))
         {
             curr->left=newNode;
             return EXIT_SUCCESS;
         }
-        InsertNode(curr->left,newNode);
+        state=InsertNode(curr->left,newNode);
         return EXIT_SUCCESS;
     }
 
@@ -52,7 +53,7 @@ int InsertNode(Node curr, Node newNode)
             curr->right=newNode;
             return EXIT_SUCCESS;
         }
-        InsertNode(curr->right,newNode);
+        state=InsertNode(curr->right,newNode);
         return EXIT_SUCCESS;
     }
 
@@ -119,15 +120,17 @@ Node FindParent(Node curr, int toFind)
 int DeleteChild(Node pos, int toDelete)
 {
     Node temp=NULL;
+    Node parent=NULL;
     Node toSwap=NULL;
+    int swap=0;
     int direction = toDelete - pos->value;
 
-    if(pos->left->value==toDelete)
+    if(pos->left&&pos->left->value==toDelete)
     {
         temp=pos->left;
     }
 
-    else if(pos->right->value==toDelete)
+    else if(pos->right&&pos->right->value==toDelete)
     {
         temp=pos->right;
     }
@@ -141,7 +144,8 @@ int DeleteChild(Node pos, int toDelete)
     if((!temp->left&&!temp->right))
     {
         free(temp);
-        if(direction<0)
+
+        if(direction < 0)
         {
             pos->left=NULL;
         }
@@ -171,11 +175,12 @@ int DeleteChild(Node pos, int toDelete)
     if(!toSwap)
         toSwap=FindSmallestRight(temp);
     
-    temp->value=toSwap->value;
+    swap=toSwap->value;
+    parent=FindParent(pos,swap);
 
-    temp=FindParent(pos,toSwap->value);
-    DeleteChild(temp,toSwap->value);
+    DeleteChild(parent,swap);
 
+    temp->value=swap;
     return EXIT_SUCCESS;
 }
 
@@ -236,7 +241,7 @@ int InsertNodes(Node root)
     buffer=(char*)malloc(MAX_STRING);
     strcpy(buffer,"");   
 
-    printf("Please input element numbers, input 'end' when you're done.\n");
+    printf("Please input element values, input 'end' when you're done.\n");
     getchar();
     
     while(strcmp(buffer,"end\n"))
@@ -264,10 +269,29 @@ int InsertNodes(Node root)
 int DeleteElement(Node root)
 {
     int toDelete=0;
+    int state=0;
     Node parent=NULL;
     PrintLine();
     printf("Please input value of element to delete: ");
     scanf(" %d",&toDelete);
+
+    if(!root->right)
+    {
+        printf("Error - tree is empty!\n");
+        return EMPTY;
+    }
+
+    if(root->right && root->right->value==toDelete)
+    {
+        if(!(root->right->left)&&!(root->right->right))
+        {
+            free(root->right);
+            root->right=NULL;
+        }
+        state = DeleteChild(root,toDelete);
+        return state;
+    }
+
 
     parent=FindParent(root,toDelete);
     if(!parent)
