@@ -228,7 +228,8 @@ void PrintMenu()
     printf("2 - Print tree preorder\n");
     printf("3 - Print tree inorder\n");
     printf("4 - Print tree postorder\n");
-    printf("5 - Delete element\n");
+    printf("5 - Print tree level order\n");
+    printf("6 - Delete element\n");
 }
 
 int InsertNodes(Node root)
@@ -254,10 +255,12 @@ int InsertNodes(Node root)
             if(strcmp(buffer,"end\n"))
             printf("Invalid input!\n");
         }
+                                                                                    
         else
         {
             node=CreateNode(input);
             state= InsertNode(root,node);
+            if(input==8)printf("Nos ti posran!\n");
         }
     }
 
@@ -308,6 +311,7 @@ int Menu(Node root)
     int selection=0;
     int state=0;
 
+
     printf("Welcome!\n");
     do
     {
@@ -336,7 +340,11 @@ int Menu(Node root)
                     state=PrintPostOrder(root->right);
                     printf("\n");
                     break;
-            case 5: state=DeleteElement(root);
+            case 5: printf("\nPrinting level order:\n");
+                    state=PrintLevelOrder(root->right);
+                    printf("\n");
+                    break;
+            case 6: state=DeleteElement(root);
                     break;
             default: printf("Unknown command!\n");
                     break;
@@ -344,4 +352,112 @@ int Menu(Node root)
     }while(selection);
         
     return EXIT_SUCCESS;
+}
+
+Position CreateList()
+{
+    Position head=NULL;
+    head=(Position)malloc(sizeof(list));
+    if(!head)
+    {
+        perror("No memory!\n");
+        return NULL;
+    }
+    head->node=NULL;
+    head->next=NULL;
+
+    return head;
+}
+
+int PrintLevelOrder(Node root)
+{
+    Position head=NULL;
+    Position temp=NULL;
+    Node curr=NULL;
+
+    head=CreateList();
+    if(!head)
+    {
+        printf("Failed to create list!\n");
+        return CANT_ALLOCATE;
+    }
+    curr=root;
+
+    while(curr)
+    {
+        printf("%d ",curr->value);
+        if(curr->left)
+        {
+            temp=CreateListNode(curr->left);
+            Push_back(head,temp);
+        }
+        if(curr->right)
+        {
+            temp=CreateListNode(curr->right);
+            Push_back(head,temp);
+        }     
+        
+        curr=Pop(head);
+    }
+
+    free(head);
+    return EXIT_SUCCESS;
+}
+int DeleteAfter(Position position)
+{
+Position temp = position->next;
+
+if (!temp)
+{
+return EXIT_SUCCESS;
+}
+
+position->next = temp->next;
+free(temp);
+
+return EXIT_SUCCESS;
+}
+
+Position InsertAfter(Position position, Position newNumber)
+{
+    newNumber->next = position->next;
+    position->next = newNumber;
+
+    return newNumber;
+}
+
+Position CreateListNode(Node node)
+{
+    Position newNumber=NULL;
+    
+    newNumber=(Position)malloc(sizeof(list));
+    newNumber->next=NULL;
+    newNumber->node=node;
+
+    return newNumber;
+}
+
+Node Pop(Position head)
+{
+    Node temp=NULL;
+    if(!head->next)
+    {
+        return NULL;
+    }
+
+    temp=head->next->node;
+
+    DeleteAfter(head);
+
+    return temp;
+}
+
+int Push_back(Position head, Position new)
+{
+    Position temp=head;
+    while(temp->next)
+        temp=temp->next;
+    InsertAfter(temp, new);
+
+return EXIT_SUCCESS;
 }
